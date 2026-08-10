@@ -1,0 +1,794 @@
+<style>
+  :root {
+    --bg: #eaeef3; --surface: #ffffff; --surface-2: #f3f6fa; --text: #11151c;
+    --muted: #5a6472; --border: #d8dee7; --accent: #e0570a; --accent-2: #0d9488;
+    --grid: rgba(17,21,28,0.055); --shadow: 0 1px 2px rgba(17,21,28,.05), 0 8px 24px rgba(17,21,28,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#090c12; --surface:#11151d; --surface-2:#161c26; --text:#e7ebf2; --muted:#8a93a4;
+      --border:#232b38; --accent:#ff7d22; --accent-2:#2dd4bf; --grid:rgba(255,255,255,0.05);
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+  }
+  :root[data-theme="light"] { --bg:#eaeef3; --surface:#ffffff; --surface-2:#f3f6fa; --text:#11151c; --muted:#5a6472; --border:#d8dee7; --accent:#e0570a; --accent-2:#0d9488; --grid:rgba(17,21,28,0.055); --shadow:0 1px 2px rgba(17,21,28,.05), 0 8px 24px rgba(17,21,28,.06); }
+  :root[data-theme="dark"]  { --bg:#090c12; --surface:#11151d; --surface-2:#161c26; --text:#e7ebf2; --muted:#8a93a4; --border:#232b38; --accent:#ff7d22; --accent-2:#2dd4bf; --grid:rgba(255,255,255,0.05); --shadow:0 1px 2px rgba(0,0,0,.4), 0 10px 30px rgba(0,0,0,.35); }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .page {
+    --mono: ui-monospace, "Cascadia Code", "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    line-height: 1.6; font-size: 16px; min-height: 100vh; overflow-x: hidden;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
+
+  .hero {
+    position: relative; border-bottom: 1px solid var(--border);
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 34px 34px,
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 34px 34px,
+      var(--surface);
+    overflow: hidden;
+  }
+  .hero .wrap { padding: 64px 24px 52px; position: relative; z-index: 2; }
+  #wire { position: absolute; top: 0; right: -30px; height: 100%; width: 400px; max-width: 46%; z-index: 1; }
+  @media (max-width: 720px){ #wire { opacity: .16; } }
+  .eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 16px; display: inline-flex; align-items: center; gap: 10px; }
+  .eyebrow::before { content:""; width: 26px; height: 1px; background: var(--accent); }
+  h1.title { font-family: var(--mono); font-weight: 650; font-size: clamp(36px, 6.5vw, 64px);
+    line-height: .98; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  h1.title .sub { color: var(--muted); }
+  .lede { font-size: clamp(15px, 2.2vw, 19px); color: var(--muted); max-width: 34ch; margin: 20px 0 0; text-wrap: balance; }
+
+  .gallery { padding: 44px 0 10px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  @media (max-width: 680px){ .grid { grid-template-columns: 1fr; } }
+  .card { border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+    background: var(--surface); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+  .card canvas { display: block; width: 100%; height: 240px; background: #05070c; cursor: grab; touch-action: none; }
+  .card canvas:active { cursor: grabbing; }
+  .card .info { padding: 15px 17px 17px; }
+  .card .top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 5px; }
+  .card .code { font-family: var(--mono); font-size: 12px; color: var(--accent); font-weight: 600; }
+  .card h3 { margin: 0; font-size: 16.5px; font-weight: 650; letter-spacing: -.01em; }
+  .card .hint { margin-left: auto; font-family: var(--mono); font-size: 11px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 5px; padding: 2px 7px; }
+  .card p { margin: 4px 0 0; color: var(--muted); font-size: 13.5px; }
+  .card .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 11px; }
+  .card .chip { font-family: var(--mono); font-size: 11px; padding: 3px 8px; border-radius: 6px;
+    background: var(--surface-2); border: 1px solid var(--border); color: var(--muted); }
+
+  .note { color: var(--muted); font-size: 12.5px; margin: 22px 2px 0; line-height: 1.7; }
+
+  section.stack { padding: 40px 0; }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 22px; }
+  .sec-head .idx { font-family: var(--mono); font-size: 13px; color: var(--accent-2); letter-spacing: .1em; }
+  .sec-head h2 { font-family: var(--mono); font-size: 19px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  .sec-head .en { color: var(--muted); font-weight: 400; }
+  .sec-head .rule { flex: 1; height: 1px; background: var(--border); align-self: center; }
+  .stack-grid { display: flex; flex-wrap: wrap; gap: 9px; }
+  .stack-grid .s { font-family: var(--mono); font-size: 13px; padding: 8px 13px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+  .stack-grid .s span { color: var(--accent-2); }
+
+  .card details { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 10px; }
+  .card summary { cursor: pointer; font-family: var(--mono); font-size: 12px; color: var(--accent-2);
+    list-style: none; user-select: none; letter-spacing: .02em; }
+  .card summary::-webkit-details-marker { display: none; }
+  .card summary::before { content: "▸ "; }
+  .card details[open] summary::before { content: "▾ "; }
+  .card .klist { margin: 11px 0 2px; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .card .klist li { font-size: 13px; color: var(--text); line-height: 1.55; padding-left: 15px; position: relative; }
+  .card .klist li::before { content: "—"; position: absolute; left: 0; color: var(--muted); }
+  .card .klist code { font-family: var(--mono); font-size: 11.5px; background: var(--surface-2);
+    border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; }
+  .card .klist b { color: var(--accent); font-weight: 600; }
+  .card details.quiz > summary { color: var(--accent); }
+  .card .quiz .q { font-size: 13px; margin: 10px 0 9px; line-height: 1.55; }
+  .card details.ans { border: none; margin: 0; padding: 0; }
+  .card details.ans > summary { font-size: 11.5px; color: var(--muted); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 10px; display: inline-block; }
+  .card details.ans > summary::before { content: "▸ "; }
+  .card details.ans[open] > summary::before { content: "▾ "; }
+  .card details.ans[open] > summary { margin-bottom: 8px; }
+  .card details.ans p { font-size: 12.5px; color: var(--text); line-height: 1.6; margin: 0;
+    background: var(--surface-2); border: 1px solid var(--border); border-radius: 7px; padding: 9px 11px; }
+
+  .glossary { padding: 20px 0 40px; }
+  .gloss-stage { margin-bottom: 30px; }
+  .gloss-stage h3 { font-family: var(--mono); font-size: 15px; margin: 0 0 12px; letter-spacing: -.01em; }
+  .gloss-stage h3 .stagenum { color: var(--accent-2); margin-right: 8px; }
+  .gloss-note { color: var(--muted); font-size: 13px; margin: 12px 0 0; line-height: 1.65;
+    border-left: 2px solid var(--accent-2); padding-left: 13px; }
+  .tblwrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; -webkit-overflow-scrolling: touch; }
+  table.gloss { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 13px; }
+  table.gloss th, table.gloss td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  table.gloss thead th { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; color: var(--muted);
+    text-transform: uppercase; background: var(--surface-2); position: sticky; top: 0; }
+  table.gloss tbody tr:last-child td { border-bottom: none; }
+  table.gloss td:first-child { font-family: var(--mono); color: var(--accent); font-weight: 600; white-space: nowrap; }
+  table.gloss td:nth-child(2) { color: var(--text); }
+  table.gloss td:nth-child(3) { color: var(--muted); }
+  .gloss-stage .term { margin-top: 10px; border: 1px solid var(--border); border-radius: 10px; padding: 0 15px; }
+  .gloss-stage .term > summary { cursor: pointer; font-family: var(--mono); font-size: 13px; color: var(--accent);
+    padding: 12px 0; list-style: none; user-select: none; }
+  .gloss-stage .term > summary::-webkit-details-marker { display: none; }
+  .gloss-stage .term > summary::before { content: "▸ "; }
+  .gloss-stage .term[open] > summary::before { content: "▾ "; }
+  .termbody { padding: 0 0 15px; font-size: 13.5px; line-height: 1.75; color: var(--text); }
+  .termbody p { margin: 0 0 10px; }
+  .termbody b { color: var(--accent); font-weight: 600; }
+  .termbody .rem { background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; color: var(--muted); font-size: 12.5px; margin: 2px 0 0; }
+
+  footer { border-top: 1px solid var(--border); margin-top: 26px; padding: 30px 0 56px; color: var(--muted); font-size: 13.5px; }
+  footer .goal { color: var(--text); font-family: var(--mono); font-size: 14px; }
+  @media (prefers-reduced-motion: reduce){ #wire { opacity:.5; } }
+</style>
+
+<div class="page">
+  <header class="hero">
+    <canvas id="wire" width="800" height="680" aria-hidden="true"></canvas>
+    <div class="wrap">
+      <p class="eyebrow">Render Master · 互動展示</p>
+      <h1 class="title">從零到<br><span class="sub">3D&nbsp;Renderer</span></h1>
+      <p class="lede">親手用 C++ 打造即時渲染器。每個階段都能在這裡即時互動 —— 用滑鼠拖曳旋轉玩玩看。</p>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <section class="gallery">
+      <div class="grid">
+
+        <div class="card"><canvas id="d-tri"></canvas><div class="info">
+          <div class="top"><span class="code">L1</span><h3>Hello Triangle</h3></div>
+          <p>最小繪圖流程：三個頂點、RGB 逐像素內插。</p>
+          <div class="chips"><span class="chip">VBO/VAO</span><span class="chip">shader</span><span class="chip">內插</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>VBO</b>：存放頂點資料的 GPU 記憶體。</li>
+            <li><b>VAO</b>：說明書，告訴 GPU 怎麼讀那堆數字。</li>
+            <li><b>Shader</b>：跑在 GPU 的小程式；vertex 定位置、fragment 定顏色。</li>
+            <li>三個角的顏色被 GPU <b>逐像素內插</b>，形成漸層。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">Vertex shader 和 Fragment shader，哪個跑的次數多？</p>
+            <details class="ans"><summary>看答案</summary><p>Fragment shader。Vertex 每個「頂點」跑一次（三角形才 3 個），Fragment 每個「像素」跑一次（可能上萬個）。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-col"></canvas><div class="info">
+          <div class="top"><span class="code">L2</span><h3>Colors + Uniform</h3></div>
+          <p>用 uniform 每幀傳時間，讓三角形旋轉、明暗呼吸。</p>
+          <div class="chips"><span class="chip">uniform</span><span class="chip">uTime</span><span class="chip">sin 呼吸</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>頂點屬性</b>：每個頂點各自不同（例如顏色）。</li>
+            <li><b>uniform</b>：這一幀所有像素相同，由 CPU 每幀傳入（如 <code>uTime</code>）。</li>
+            <li><code>out</code>→<code>in</code> 搭配逐像素內插，是之後光照／貼圖的基礎。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">顏色是「頂點屬性」還是「uniform」？兩者差在哪？</p>
+            <details class="ans"><summary>看答案</summary><p>顏色是<b>頂點屬性</b>（每個頂點各自不同）。uniform 這一幀所有像素相同、由 CPU 每幀傳入（例如 <code>uTime</code>）。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-tr"></canvas><div class="info">
+          <div class="top"><span class="code">L3</span><h3>矩陣變換</h3></div>
+          <p>用矩陣旋轉一個彩色正方形，取代手寫三角函數。</p>
+          <div class="chips"><span class="chip">mat4</span><span class="chip">rotate</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li>一個 <b>mat4</b> 能同時表達平移／旋轉／縮放，還能相乘疊加。</li>
+            <li>shader 裡永遠只要 <code>uModel * vec4(pos,1.0)</code> 一行。</li>
+            <li>相乘<b>順序不可交換</b>：GLM 裡越右邊的矩陣越先作用到頂點。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">在 GLM 裡，<code>T * R</code> 和 <code>R * T</code> 畫出來有什麼不同？</p>
+            <details class="ans"><summary>看答案</summary><p>最右邊先作用。<code>T*R</code>＝先旋轉再平移＝在該位置「<b>自轉</b>」；<code>R*T</code>＝先平移再旋轉＝繞原點「<b>公轉</b>」。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-cube"></canvas><div class="info">
+          <div class="top"><span class="code">L4</span><h3>MVP 立方體</h3><span class="hint">拖曳</span></div>
+          <p>Model·View·Projection + 深度測試，第一個真正的 3D。</p>
+          <div class="chips"><span class="chip">MVP</span><span class="chip">深度測試</span><span class="chip">透視</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>MVP</b>：Model(到世界) → View(到相機) → Projection(到螢幕)。</li>
+            <li>透視投影用長寬比修正，正方形才不會被壓扁。</li>
+            <li><b>深度測試</b>：開啟後近的面才會擋住遠的面。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q"><code>gl_Position = P * V * M * pos</code>，這三個矩陣各把頂點從哪帶到哪？</p>
+            <details class="ans"><summary>看答案</summary><p><b>M</b>：物體→世界；<b>V</b>：世界→相機視角；<b>P</b>：相機→螢幕（透視＋長寬比）。最右的 M 先作用。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-cam"></canvas><div class="info">
+          <div class="top"><span class="code">L5</span><h3>相機</h3><span class="hint">拖曳環繞</span></div>
+          <p>拖曳讓相機繞著一堆方塊飛 —— 每幀重算 View 矩陣。</p>
+          <div class="chips"><span class="chip">lookAt</span><span class="chip">環繞</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li>相機 = <b>位置 + 朝向 + 上</b> 三個向量。</li>
+            <li>每幀重算 <code>lookAt(pos, pos+front, up)</code>。</li>
+            <li>移動量乘 <b>deltaTime</b>，速度才不受幀率影響。</li>
+            <li>左右移動 = <code>cross(front, up)</code>（外積求右方向）。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">為什麼移動距離要乘上 <code>deltaTime</code>？</p>
+            <details class="ans"><summary>看答案</summary><p>讓速度<b>與幀率無關</b>——不管電腦跑幾 FPS，每秒移動的距離都一樣。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-tex"></canvas><div class="info">
+          <div class="top"><span class="code">TEX</span><h3>貼圖</h3><span class="hint">拖曳</span></div>
+          <p>把圖片貼上表面：UV 座標 + 取樣器。</p>
+          <div class="chips"><span class="chip">UV</span><span class="chip">sampler2D</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>UV 座標</b>(0~1) 告訴 GPU 頂點對應圖上哪個位置。</li>
+            <li><b>wrap</b>：超出範圍怎麼包（REPEAT 平鋪）。</li>
+            <li><b>filter</b>：LINEAR 平滑、NEAREST 馬賽克。</li>
+            <li>fragment 用 <code>texture(sampler, uv)</code> 取色。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">貼圖座標 <code>(0,0)</code> 和 <code>(1,1)</code> 分別對應圖片的哪個角？</p>
+            <details class="ans"><summary>看答案</summary><p><code>(0,0)</code>＝左下角、<code>(1,1)</code>＝右上角。GPU 逐像素內插 UV，把圖貼滿整個面。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-lit"></canvas><div class="info">
+          <div class="top"><span class="code">LIT</span><h3>Phong 光照</h3><span class="hint">拖曳</span></div>
+          <p>環境光 + 漫反射 + 高光，物體變立體，光源繞圈。</p>
+          <div class="chips"><span class="chip">法線</span><span class="chip">diffuse</span><span class="chip">specular</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>Phong = 環境光 + 漫反射 + 高光</b> 三層相加。</li>
+            <li>漫反射靠 <code>dot(法線, 光方向)</code>：越正對越亮。</li>
+            <li>高光靠 <code>reflect</code>：反射剛好進眼睛時最亮，會隨相機移動。</li>
+            <li><b>法線</b>描述每個面朝哪，是光照的核心。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">漫反射用哪個數學運算決定一個面有多亮？為什麼？</p>
+            <details class="ans"><summary>看答案</summary><p><code>dot(法線, 光方向)</code>（內積）。面越正對光源、夾角越小，內積越大＝越亮；背對＝0＝暗。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-map"></canvas><div class="info">
+          <div class="top"><span class="code">MAP</span><h3>光照貼圖</h3><span class="hint">拖曳</span></div>
+          <p>Specular map 決定哪裡反光：亮點只落在橘格子上。</p>
+          <div class="chips"><span class="chip">diffuse map</span><span class="chip">specular map</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>diffuse map</b>：表面本來的顏色。</li>
+            <li><b>specular map</b>：黑白圖，決定哪裡會反光。</li>
+            <li>一張 specular map 就能讓同一物體有多種材質（木頭 + 金屬邊）。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">specular map 是什麼樣的圖？它控制什麼？</p>
+            <details class="ans"><summary>看答案</summary><p>一張<b>黑白（灰階）圖</b>。白＝該處會反光、黑＝不反光。讓同一物體不同部位有不同材質。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-cast"></canvas><div class="info">
+          <div class="top"><span class="code">CAST</span><h3>多光源 · 衰減</h3><span class="hint">拖曳</span></div>
+          <p>點光源繞圈，靠近的方塊亮、遠的暗 —— 距離衰減。</p>
+          <div class="chips"><span class="chip">point light</span><span class="chip">attenuation</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>方向光</b>(太陽)：無位置、統一方向、不隨距離衰減。</li>
+            <li><b>點光源</b>(路燈)：有位置，用 <code>attenuation</code> 越遠越暗。</li>
+            <li><b>聚光燈</b>(手電筒)：只照一個圓錐，接上相機就是手電筒。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">點光源和方向光最大的差別是什麼？</p>
+            <details class="ans"><summary>看答案</summary><p>點光源有「<b>位置</b>」且隨距離<b>衰減</b>（越遠越暗）；方向光沒有位置、不衰減、方向到處一樣（像太陽）。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-geo"></canvas><div class="info">
+          <div class="top"><span class="code">GEO</span><h3>幾何 + EBO</h3><span class="hint">拖曳</span></div>
+          <p>程序生成球體，用線框看它由三角形＋索引組成。</p>
+          <div class="chips"><span class="chip">程序化網格</span><span class="chip">EBO</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li>用兩個角度掃過球面生成頂點；球面上 <b>法線 = 該點方向</b>。</li>
+            <li><b>EBO</b> 存索引，用 <code>glDrawElements</code> 畫。</li>
+            <li>省掉重複頂點——而且這正是<b>模型檔的結構</b>。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">EBO（索引緩衝）到底解決了什麼問題？</p>
+            <details class="ans"><summary>看答案</summary><p>用「<b>索引</b>」重複引用同一批頂點，省掉重複的頂點資料。這也正是 3D 模型檔的儲存結構。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-model"></canvas><div class="info">
+          <div class="top"><span class="code">OBJ</span><h3>複雜模型</h3><span class="hint">拖曳</span></div>
+          <p>一個複雜網格（環面結）。C++ 版是用 Assimp 載入蜘蛛模型。</p>
+          <div class="chips"><span class="chip">複雜幾何</span><span class="chip">Assimp(C++)</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>Assimp</b> 把 .obj/.fbx… 讀成統一的頂點 + 索引。</li>
+            <li>倒進 VBO/EBO——和自己生成的球體<b>流程一樣</b>。</li>
+            <li>一模型可能有多個 mesh；用包圍盒<b>自動置中縮放</b>。</li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">Assimp 讀出模型後，資料要丟進哪兩個緩衝？</p>
+            <details class="ans"><summary>看答案</summary><p>頂點丟 <b>VBO</b>、面的索引丟 <b>EBO</b>——和自己用程式生成球體的流程完全一樣。</p></details>
+          </details></div></div>
+
+        <div class="card"><canvas id="d-shadow"></canvas><div class="info">
+          <div class="top"><span class="code">SHADOW</span><h3>陰影</h3><span class="hint">拖曳</span></div>
+          <p>物體在地板上投下陰影，太陽緩緩繞圈。</p>
+          <div class="chips"><span class="chip">FBO</span><span class="chip">shadow map</span><span class="chip">PCF</span></div>
+          <details><summary>重點筆記</summary><ul class="klist">
+            <li><b>兩次渲染</b>：先從光的視角記錄深度成「深度圖」。</li>
+            <li>正常畫時比對「像素深度 vs 深度圖」→ 更遠 = 在陰影。</li>
+            <li><b>FBO</b>：畫到貼圖而非螢幕（後處理特效也靠它）。</li>
+            <li><b>bias</b> 防表面雜紋、<b>PCF</b> 柔化陰影邊緣。</li>
+            <li><i>此網頁 demo 用「平面投影」示意；C++ 版才是上面這套完整 shadow map。</i></li>
+          </ul></details>
+          <details class="quiz"><summary>🧠 隨堂小測</summary>
+            <p class="q">shadow mapping 為什麼需要「渲染兩次」？</p>
+            <details class="ans"><summary>看答案</summary><p>Pass1 從光的視角把場景深度畫成「深度圖」；Pass2 正常畫時比對深度，判斷像素有沒有被別的東西擋住（在陰影）。</p></details>
+          </details></div></div>
+
+      </div>
+      <p class="note">※ 這些是用 WebGL 在瀏覽器裡即時重現的版本（可拖曳），對應我用 C++ + OpenGL 寫的原始 demo。連 shader 都是真的 GLSL。「複雜模型」那格因瀏覽器讀不到本機檔案，改用程序生成的網格示意。</p>
+    </section>
+
+    <section class="glossary">
+      <div class="sec-head"><span class="idx">GLOSSARY</span><h2>名詞速查 <span class="en">Glossary</span></h2><span class="rule"></span></div>
+      <p class="note" style="margin-top:-8px;margin-bottom:24px;">整個領域的名詞地圖 —— 有些你已經做過，有些是之後的路。手機上表格可左右滑。</p>
+
+      <div class="gloss-stage">
+        <h3><span class="stagenum">01</span>Graphics Fundamentals</h3>
+        <div class="tblwrap"><table class="gloss">
+          <thead><tr><th>名詞</th><th>簡單理解</th><th>實際應用</th></tr></thead>
+          <tbody>
+            <tr><td>Graphics Pipeline</td><td>GPU 將頂點資料轉成畫面的流程</td><td>所有遊戲引擎、OpenGL、DirectX、Vulkan</td></tr>
+            <tr><td>Coordinate Space</td><td>用不同參考系描述物體位置</td><td>物件擺放、相機、UI、光照、Picking</td></tr>
+            <tr><td>Matrix</td><td>用數學表示平移、旋轉、縮放</td><td>Transform、骨架、Camera、投影</td></tr>
+            <tr><td>Projection Matrix</td><td>把相機空間轉成可投影的畫面範圍</td><td>FOV、透視、正交相機、Near/Far</td></tr>
+            <tr><td>MVP Matrix</td><td>Model、View、Projection 的完整轉換鏈</td><td>Vertex Shader 將模型頂點送到畫面</td></tr>
+            <tr><td>Camera</td><td>定義觀察位置、方向與投影方式</td><td>遊戲視角、監視器、Minimap、Synthetic Data</td></tr>
+            <tr><td>Unproject</td><td>將螢幕座標反推回 3D 世界</td><td>滑鼠點選、射線、3D 標註、深度轉點雲</td></tr>
+          </tbody>
+        </table></div>
+        <details class="term"><summary>Unproject — 白話解說</summary><div class="termbody">
+          <p><b>Project（投影）</b>＝拍照：3D 世界的點經過 MVP 壓成 2D 螢幕位置。<b>Unproject</b>＝倒著走：拿螢幕上的點（例如滑鼠位置）反推回 3D。</p>
+          <p>關鍵難點：螢幕上一個點，其實對應 3D 世界裡<b>一整條射線</b>（那條線上所有點拍出來都落在同一像素）。所以只靠 2D 座標只能得到「一條射線」；要唯一定位一點，還需要<b>深度（多遠）</b>。</p>
+          <p>做法：把 MVP <b>反過來乘</b>（用 inverse(Projection)、inverse(View)），把螢幕座標倒推回世界。</p>
+          <p class="rem">記法：Project＝拍照 3D→2D；Unproject＝看照片反推 2D→3D，只能得到射線，除非知道深度。用途：滑鼠點選、射線、深度圖轉點雲。</p>
+        </div></details>
+      </div>
+
+      <div class="gloss-stage">
+        <h3><span class="stagenum">02</span>Shader Programming</h3>
+        <div class="tblwrap"><table class="gloss">
+          <thead><tr><th>名詞</th><th>簡單理解</th><th>實際應用</th></tr></thead>
+          <tbody>
+            <tr><td>Vertex Shader</td><td>處理每個頂點的位置與資料</td><td>變形、骨架動畫、風吹、頂點位移</td></tr>
+            <tr><td>Fragment Shader</td><td>計算畫面片段的顏色</td><td>材質、光照、透明、特效</td></tr>
+            <tr><td>HLSL／GLSL</td><td>撰寫 Shader 的語言</td><td>Unity、Unreal、OpenGL、DirectX</td></tr>
+            <tr><td>PBR</td><td>模擬較一致、可信的材質光照</td><td>金屬、塑膠、木材、角色與環境材質</td></tr>
+            <tr><td>BRDF</td><td>描述光照到表面後如何反射</td><td>PBR 的核心光照模型</td></tr>
+            <tr><td>IBL</td><td>使用環境貼圖提供光照與反射</td><td>天空盒、金屬反射、室外環境光</td></tr>
+          </tbody>
+        </table></div>
+        <p class="gloss-note">你做過的 Phong Lighting 是進入 PBR 前的重要基礎：Ambient、Diffuse、Specular、Normal、Light Direction 都會繼續出現在後續材質學習中。</p>
+        <details class="term"><summary>PBR — 白話解說</summary><div class="termbody">
+          <p>Phong 像<b>化妝</b>：手動調 ambient/diffuse/specular「調到看起來對」，換個燈光就可能露餡。<b>PBR 是真材實料</b>：照真實世界光怎麼反彈來算，材質（例如黃金）不管在什麼光線下都對——這個「一致性」是最大價值。</p>
+          <p>不再調沒意義的數字，改用看得懂的旋鈕：<b>Albedo</b>（本色）、<b>Metallic</b>（是不是金屬 0~1）、<b>Roughness</b>（多粗糙）。</p>
+          <p>兩個物理原則：<b>能量守恆</b>（反射不能比照到的多）＋<b>微表面</b>（表面是幾百萬面小鏡子；越粗糙→反光越散越模糊）。</p>
+          <p class="rem">對照 Phong：你的 <code>pow(...,32)</code> 反光集中度 → Roughness；手調的 specular 顏色/強度 → Metallic + Albedo。記法：Phong＝化妝；PBR＝真材實料。</p>
+        </div></details>
+        <details class="term"><summary>BRDF — 白話解說</summary><div class="termbody">
+          <p>材質的「<b>反光食譜</b>」：給它「光來的方向 + 我看的方向 + 材質」，它回你「這點該多亮」。名字裡的 Bidirectional（雙向）就是指同時看這兩個方向。</p>
+          <p>你 Phong 裡的 <b>diffuse + specular 就是一個簡化版 BRDF</b>——你早就在做，只是不知道名字。PBR 用更精確的 <b>Cook-Torrance</b> 版本。</p>
+          <p>它的高光 = <b>D × F × G</b>：D＝多少小鏡子朝對方向（由 roughness 決定）、<b>F＝Fresnel</b>（掠射角反光更強，像遠看桌面/水面會反光）、G＝小鏡子互相遮擋。公式不用背。</p>
+          <p class="rem">記法：BRDF＝材質的反光食譜（光向+視向→亮度）。你的 Phong 是簡化版；PBR 版＝D(粗糙)×F(掠射反光)×G(互遮)。</p>
+        </div></details>
+        <details class="term"><summary>IBL — 白話解說</summary><div class="termbody">
+          <p>用「<b>環境的照片</b>」（360° 全景/天空盒/HDRI）整片當光源。真實物體不是被幾顆燈照，而是被四周所有東西（天空、牆、地面反彈）照亮——IBL 就在還原這件事。</p>
+          <p>兩個重點：① 物體會<b>融入場景</b>，像真的待在那；② <b>金屬非它不可</b>——金屬的特色是反射周遭，沒有 IBL 金屬球會黑黑死死（沒東西可反射）。所以 PBR 和 IBL 常綁在一起。</p>
+          <p class="rem">記法：幾顆燈＝黑房間裡的手電筒；IBL＝直接在戶外/亮房間，光從整片天空四周來。它是你 Phong 那個平平的 <code>ambient</code> 的高級版。</p>
+        </div></details>
+      </div>
+
+      <div class="gloss-stage">
+        <h3><span class="stagenum">03</span>Rendering</h3>
+        <div class="tblwrap"><table class="gloss">
+          <thead><tr><th>名詞</th><th>簡單理解</th><th>實際應用</th></tr></thead>
+          <tbody>
+            <tr><td>Forward Rendering</td><td>每個物體直接計算光照後輸出</td><td>VR、透明物件、較簡單場景</td></tr>
+            <tr><td>Deferred Rendering</td><td>先儲存材質資訊，再統一算光</td><td>多光源、大型遊戲場景</td></tr>
+            <tr><td>Render Target</td><td>GPU 將畫面寫入的目的地</td><td>Minimap、監視器、後處理、相機輸出</td></tr>
+            <tr><td>Frame Buffer</td><td>管理 Color、Depth 等輸出附件</td><td>最終畫面、離屏渲染、後處理</td></tr>
+            <tr><td>G-Buffer</td><td>Deferred 使用的一組材質緩衝</td><td>Base Color、Normal、Depth、Roughness</td></tr>
+            <tr><td>MRT</td><td>一次 Render Pass 寫入多張 Target</td><td>建立 G-Buffer、輸出多種資料</td></tr>
+            <tr><td>Render Pass</td><td>一段有明確輸入與輸出的渲染工作</td><td>Shadow、Opaque、Transparent、Post FX</td></tr>
+            <tr><td>HDR</td><td>保存超過一般螢幕亮度範圍的顏色</td><td>太陽、高亮燈光、Bloom</td></tr>
+            <tr><td>Tone Mapping</td><td>將 HDR 映射成螢幕可顯示範圍</td><td>電影感、曝光、亮暗控制</td></tr>
+            <tr><td>Bloom</td><td>讓高亮區域向外發光</td><td>霓虹、能量光束、發光材質</td></tr>
+            <tr><td>Motion Vector</td><td>記錄物體在前後影格間的位移</td><td>TAA、Motion Blur、DLSS</td></tr>
+            <tr><td>TAA</td><td>使用多個影格降低鋸齒</td><td>現代遊戲畫面穩定與抗鋸齒</td></tr>
+          </tbody>
+        </table></div>
+        <p class="gloss-note">你已經碰過 Depth Buffer，這正是 Frame Buffer 與後續 G-Buffer 的入口。你的練習也驗證過：沒有深度測試時，後方表面可能錯誤蓋住前方表面。</p>
+      </div>
+
+      <div class="gloss-stage">
+        <h3><span class="stagenum">04</span>GPU Programming</h3>
+        <div class="tblwrap"><table class="gloss">
+          <thead><tr><th>名詞</th><th>簡單理解</th><th>實際應用</th></tr></thead>
+          <tbody>
+            <tr><td>GPU Pipeline</td><td>GPU 各階段如何處理繪圖工作</td><td>分析瓶頸、理解 Draw Call</td></tr>
+            <tr><td>GPU Memory</td><td>GPU 存放 Mesh、Texture、Buffer 的空間</td><td>VRAM 管理、資產最佳化</td></tr>
+            <tr><td>Compute Shader</td><td>不限定畫三角形的 GPU 通用運算</td><td>粒子、影像處理、模擬、資料生成</td></tr>
+            <tr><td>Thread Group</td><td>Compute Shader 的執行分組</td><td>工作分配、共享記憶體</td></tr>
+            <tr><td>Warp／Wave</td><td>GPU 同時執行的一組執行緒</td><td>分支效能、GPU 最佳化</td></tr>
+            <tr><td>Occupancy</td><td>GPU 同時維持多少有效工作</td><td>Compute 效能分析</td></tr>
+            <tr><td>GPU Instancing</td><td>用少量指令繪製大量相同 Mesh</td><td>草、樹、粒子、群眾</td></tr>
+            <tr><td>Mesh Shader</td><td>更彈性的幾何處理 Pipeline</td><td>GPU-driven rendering、幾何裁切</td></tr>
+            <tr><td>Async Compute</td><td>Rendering 同時執行其他 GPU 工作</td><td>後處理、模擬、提高 GPU 利用率</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <section class="stack">
+      <div class="sec-head"><span class="idx">TOOLS</span><h2>工具鏈 <span class="en">Tech Stack</span></h2><span class="rule"></span></div>
+      <div class="stack-grid">
+        <div class="s"><span>»</span> C++17</div>
+        <div class="s"><span>»</span> OpenGL 3.3 Core</div>
+        <div class="s"><span>»</span> GLFW</div>
+        <div class="s"><span>»</span> GLAD</div>
+        <div class="s"><span>»</span> GLM</div>
+        <div class="s"><span>»</span> Assimp</div>
+        <div class="s"><span>»</span> CMake</div>
+        <div class="s"><span>»</span> MSVC</div>
+      </div>
+    </section>
+
+    <footer>
+      <p class="goal">// 目標：Graphics / Rendering Engineer</p>
+      <p>Render Master — 每個概念都親手寫、跑起來、做成可以玩的 demo。</p>
+    </footer>
+  </div>
+</div>
+
+<script>
+(function () {
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ---------- mat helpers (column-major) ----------
+  const I = () => new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
+  function mul(a,b){ const o=new Float32Array(16);
+    for(let c=0;c<4;c++)for(let r=0;r<4;r++) o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];
+    return o; }
+  const mulAll = (...ms) => ms.reduce((a,b)=>mul(a,b));
+  function persp(f,a,n,fr){ const t=1/Math.tan(f/2),o=new Float32Array(16); o[0]=t/a;o[5]=t;o[10]=(fr+n)/(n-fr);o[11]=-1;o[14]=2*fr*n/(n-fr); return o; }
+  function ortho(l,r,b,t,n,f){ const o=I(); o[0]=2/(r-l);o[5]=2/(t-b);o[10]=-2/(f-n);o[12]=-(r+l)/(r-l);o[13]=-(t+b)/(t-b);o[14]=-(f+n)/(f-n); return o; }
+  function trans(x,y,z){ const o=I();o[12]=x;o[13]=y;o[14]=z;return o; }
+  function rotX(a){const c=Math.cos(a),s=Math.sin(a),o=I();o[5]=c;o[6]=s;o[9]=-s;o[10]=c;return o;}
+  function rotY(a){const c=Math.cos(a),s=Math.sin(a),o=I();o[0]=c;o[2]=-s;o[8]=s;o[10]=c;return o;}
+  function scl(x,y,z){const o=I();o[0]=x;o[5]=y===undefined?x:y;o[10]=z===undefined?x:z;return o;}
+  const m3 = m => new Float32Array([m[0],m[1],m[2],m[4],m[5],m[6],m[8],m[9],m[10]]);
+  function lookAt(e,c,u){
+    const f=norm([c[0]-e[0],c[1]-e[1],c[2]-e[2]]);
+    const s=norm(cross(f,u)); const v=cross(s,f);
+    return new Float32Array([s[0],v[0],-f[0],0, s[1],v[1],-f[1],0, s[2],v[2],-f[2],0,
+      -dot(s,e),-dot(v,e),dot(f,e),1]);
+  }
+  const cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  const norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l];};
+
+  // ---------- GL helpers ----------
+  function prog(gl,vs,fs){ const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);
+    if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o;};
+    const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,vs));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,fs));
+    gl.linkProgram(p); if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw new Error(gl.getProgramInfoLog(p)); return p; }
+  const vbuf=(gl,d)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(d),gl.STATIC_DRAW);return b;};
+  const ibuf=(gl,d)=>{const b=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,b);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(d),gl.STATIC_DRAW);return b;};
+  function resize(gl,cv){const dpr=Math.min(devicePixelRatio||1,2);const w=(cv.clientWidth*dpr)|0,h=(cv.clientHeight*dpr)|0;
+    if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;} gl.viewport(0,0,cv.width,cv.height); return cv.width/Math.max(cv.height,1);}
+  function drag(cv,rx,ry){ const st={rx:rx||-0.4,ry:ry||0.7,down:false,px:0,py:0};
+    cv.addEventListener('pointerdown',e=>{st.down=true;st.px=e.clientX;st.py=e.clientY;cv.setPointerCapture(e.pointerId);});
+    cv.addEventListener('pointerup',()=>st.down=false); cv.addEventListener('pointercancel',()=>st.down=false);
+    cv.addEventListener('pointermove',e=>{if(!st.down)return;st.ry+=(e.clientX-st.px)*0.01;st.rx+=(e.clientY-st.py)*0.01;
+      st.rx=Math.max(-1.45,Math.min(1.45,st.rx));st.px=e.clientX;st.py=e.clientY;}); return st; }
+
+  // ---------- geometry ----------
+  function cubeData(){
+    const F=[
+      {p:[[-.5,-.5,.5],[.5,-.5,.5],[.5,.5,.5],[-.5,.5,.5]],n:[0,0,1],c:[0.93,0.28,0.30]},
+      {p:[[.5,-.5,-.5],[-.5,-.5,-.5],[-.5,.5,-.5],[.5,.5,-.5]],n:[0,0,-1],c:[0.30,0.80,0.45]},
+      {p:[[-.5,-.5,-.5],[-.5,-.5,.5],[-.5,.5,.5],[-.5,.5,-.5]],n:[-1,0,0],c:[0.27,0.52,0.96]},
+      {p:[[.5,-.5,.5],[.5,-.5,-.5],[.5,.5,-.5],[.5,.5,.5]],n:[1,0,0],c:[0.98,0.80,0.25]},
+      {p:[[-.5,.5,.5],[.5,.5,.5],[.5,.5,-.5],[-.5,.5,-.5]],n:[0,1,0],c:[0.30,0.85,0.87]},
+      {p:[[-.5,-.5,-.5],[.5,-.5,-.5],[.5,-.5,.5],[-.5,-.5,.5]],n:[0,-1,0],c:[0.85,0.36,0.87]},
+    ];
+    const pos=[],nrm=[],uv=[],col=[],UV=[[0,0],[1,0],[1,1],[0,1]];
+    for(const f of F)for(const i of [0,1,2,0,2,3]){pos.push(...f.p[i]);nrm.push(...f.n);uv.push(...UV[i]);col.push(...f.c);}
+    return {pos,nrm,uv,col,count:36};
+  }
+  function sphereData(st,sl){ const pos=[],nrm=[],idx=[],PI=Math.PI;
+    for(let i=0;i<=st;i++){const phi=PI*i/st;for(let j=0;j<=sl;j++){const th=2*PI*j/sl;
+      const nx=Math.sin(phi)*Math.cos(th),ny=Math.cos(phi),nz=Math.sin(phi)*Math.sin(th);pos.push(nx,ny,nz);nrm.push(nx,ny,nz);}}
+    const cols=sl+1;for(let i=0;i<st;i++)for(let j=0;j<sl;j++){const a=i*cols+j,b=a+cols;idx.push(a,b,a+1,a+1,b,b+1);}
+    return {pos,nrm,idx};
+  }
+  function torusKnot(seg,side,p,q,tube){ const pos=[],nrm=[],idx=[],PI=Math.PI;
+    const cur=t=>{const r=2+Math.cos(q*t);return[r*Math.cos(p*t),r*Math.sin(p*t),Math.sin(q*t)*2];};
+    for(let i=0;i<seg;i++){const t=2*PI*i/seg;const c=cur(t);const c2=cur(t+0.01);
+      const T=norm([c2[0]-c[0],c2[1]-c[1],c2[2]-c[2]]);
+      let N=norm(cross(T,[0,0,1])); if(!isFinite(N[0]))N=norm(cross(T,[0,1,0]));
+      const B=cross(T,N);
+      for(let j=0;j<side;j++){const v=2*PI*j/side;const cv=Math.cos(v),sv=Math.sin(v);
+        const nx=cv*N[0]+sv*B[0],ny=cv*N[1]+sv*B[1],nz=cv*N[2]+sv*B[2];
+        pos.push((c[0]+tube*nx)*0.5,(c[1]+tube*ny)*0.5,(c[2]+tube*nz)*0.5);nrm.push(nx,ny,nz);}}
+    for(let i=0;i<seg;i++)for(let j=0;j<side;j++){const a=i*side+j,b=((i+1)%seg)*side+j,a2=i*side+(j+1)%side,b2=((i+1)%seg)*side+(j+1)%side;
+      idx.push(a,b,a2,a2,b,b2);}
+    return {pos,nrm,idx};
+  }
+  function checkerTex(gl,S,shiny){ const px=new Uint8Array(S*S*4);
+    for(let y=0;y<S;y++)for(let x=0;x<S;x++){const i=(y*S+x)*4,o=(((x>>3)+(y>>3))&1);
+      if(shiny){const v=o?255:20;px[i]=px[i+1]=px[i+2]=v;} else {px[i]=o?230:40;px[i+1]=o?120:60;px[i+2]=o?40:90;}
+      px[i+3]=255;}
+    const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,S,S,0,gl.RGBA,gl.UNSIGNED_BYTE,px);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+    return t; }
+
+  const PHONG_FS =
+   'precision mediump float;varying vec3 vN;varying vec3 vF;uniform vec3 uLight;uniform vec3 uEye;uniform vec3 uColor;'+
+   'void main(){vec3 n=normalize(vN);vec3 l=normalize(uLight-vF);float d=max(dot(n,l),0.0);'+
+   'vec3 v=normalize(uEye-vF);vec3 r=reflect(-l,n);float s=pow(max(dot(v,r),0.0),32.0);'+
+   'gl_FragColor=vec4((0.12+d+0.5*s)*uColor,1.0);}';
+  const PHONG_VS =
+   'attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uProj,uView,uModel;uniform mat3 uNM;'+
+   'varying vec3 vN;varying vec3 vF;void main(){vec4 w=uModel*vec4(aPos,1.0);vF=w.xyz;vN=uNM*aNormal;gl_Position=uProj*uView*w;}';
+
+  // ---------- demos ----------
+  function D_tri(cv){ const gl=cv.getContext('webgl');
+    const p=prog(gl,'attribute vec2 aPos;attribute vec3 aColor;varying vec3 c;uniform float r;uniform float a;'+
+      'void main(){float C=cos(r),S=sin(r);vec2 q=vec2(aPos.x*C-aPos.y*S,aPos.x*S+aPos.y*C);q.x/=a;gl_Position=vec4(q,0.0,1.0);c=aColor;}',
+      'precision mediump float;varying vec3 c;void main(){gl_FragColor=vec4(c,1.0);}');
+    const vb=vbuf(gl,[0,0.62,-0.6,-0.5,0.6,-0.5]),cb=vbuf(gl,[0.98,0.45,0.2,0.2,0.85,0.4,0.3,0.5,1.0]);
+    const aP=gl.getAttribLocation(p,'aPos'),aC=gl.getAttribLocation(p,'aColor'),uR=gl.getUniformLocation(p,'r'),uA=gl.getUniformLocation(p,'a');
+    (function loop(t){const a=resize(gl,cv);gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,2,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
+      gl.uniform1f(uR,reduce?0.0:t*0.0004);gl.uniform1f(uA,a);gl.drawArrays(gl.TRIANGLES,0,3);requestAnimationFrame(loop);})(0);
+  }
+  function D_col(cv){ const gl=cv.getContext('webgl');
+    const p=prog(gl,'attribute vec2 aPos;attribute vec3 aColor;varying vec3 c;uniform float r;uniform float a;'+
+      'void main(){float C=cos(r),S=sin(r);vec2 q=vec2(aPos.x*C-aPos.y*S,aPos.x*S+aPos.y*C);q.x/=a;gl_Position=vec4(q,0.0,1.0);c=aColor;}',
+      'precision mediump float;varying vec3 c;uniform float t;void main(){float pulse=0.45+0.55*sin(t*2.0);gl_FragColor=vec4(c*pulse,1.0);}');
+    const vb=vbuf(gl,[0,0.62,-0.6,-0.5,0.6,-0.5]),cb=vbuf(gl,[1.0,0.85,0.2,1.0,0.4,0.1,0.9,0.15,0.35]);
+    const aP=gl.getAttribLocation(p,'aPos'),aC=gl.getAttribLocation(p,'aColor'),uR=gl.getUniformLocation(p,'r'),uA=gl.getUniformLocation(p,'a'),uT=gl.getUniformLocation(p,'t');
+    (function loop(t){const a=resize(gl,cv);gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,2,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
+      const tt=reduce?1.0:t*0.001;gl.uniform1f(uR,tt*0.6);gl.uniform1f(uA,a);gl.uniform1f(uT,tt);gl.drawArrays(gl.TRIANGLES,0,3);requestAnimationFrame(loop);})(0);
+  }
+  function D_tr(cv){ const gl=cv.getContext('webgl');
+    const p=prog(gl,'attribute vec2 aPos;attribute vec3 aColor;varying vec3 c;uniform float r;uniform float a;'+
+      'void main(){float C=cos(r),S=sin(r);vec2 q=vec2(aPos.x*C-aPos.y*S,aPos.x*S+aPos.y*C);q.x/=a;gl_Position=vec4(q,0.0,1.0);c=aColor;}',
+      'precision mediump float;varying vec3 c;void main(){gl_FragColor=vec4(c,1.0);}');
+    const P=[-.45,-.45,.45,-.45,.45,.45,-.45,-.45,.45,.45,-.45,.45];
+    const C=[0.93,0.28,0.30, 0.30,0.80,0.45, 0.98,0.80,0.25, 0.93,0.28,0.30, 0.98,0.80,0.25, 0.27,0.52,0.96];
+    const vb=vbuf(gl,P),cb=vbuf(gl,C);
+    const aP=gl.getAttribLocation(p,'aPos'),aC=gl.getAttribLocation(p,'aColor'),uR=gl.getUniformLocation(p,'r'),uA=gl.getUniformLocation(p,'a');
+    (function loop(t){const a=resize(gl,cv);gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT);gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,2,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
+      gl.uniform1f(uR,reduce?0.5:t*0.0006);gl.uniform1f(uA,a);gl.drawArrays(gl.TRIANGLES,0,6);requestAnimationFrame(loop);})(0);
+  }
+  function D_cube(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,'attribute vec3 aPos;attribute vec3 aColor;uniform mat4 uMVP;varying vec3 c;void main(){gl_Position=uMVP*vec4(aPos,1.0);c=aColor;}',
+      'precision mediump float;varying vec3 c;void main(){gl_FragColor=vec4(c,1.0);}');
+    const d=cubeData(),vb=vbuf(gl,d.pos),cb=vbuf(gl,d.col);
+    const aP=gl.getAttribLocation(p,'aPos'),aC=gl.getAttribLocation(p,'aColor'),uM=gl.getUniformLocation(p,'uMVP');
+    const st=drag(cv);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.6;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const mvp=mulAll(persp(0.9,a,0.1,100),trans(0,0,-3.4),rotY(st.ry),rotX(st.rx));
+      gl.useProgram(p);gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(uM,false,mvp);gl.drawArrays(gl.TRIANGLES,0,d.count);requestAnimationFrame(loop);})(0);
+  }
+  function D_cam(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,'attribute vec3 aPos;attribute vec3 aColor;uniform mat4 uVP;uniform mat4 uModel;varying vec3 c;void main(){gl_Position=uVP*uModel*vec4(aPos,1.0);c=aColor;}',
+      'precision mediump float;varying vec3 c;void main(){gl_FragColor=vec4(c,1.0);}');
+    const d=cubeData(),vb=vbuf(gl,d.pos),cb=vbuf(gl,d.col);
+    const aP=gl.getAttribLocation(p,'aPos'),aC=gl.getAttribLocation(p,'aColor'),uVP=gl.getUniformLocation(p,'uVP'),uM=gl.getUniformLocation(p,'uModel');
+    const cubes=[[0,0,0],[2,0.5,-1],[-2,-0.3,1],[1,-0.6,2],[-1.5,0.7,-2]];
+    const st=drag(cv,-0.25,0.6);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.4;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const R=7;const eye=[Math.sin(st.ry)*Math.cos(st.rx)*R,Math.sin(st.rx)*R+1.0,Math.cos(st.ry)*Math.cos(st.rx)*R];
+      const vp=mul(persp(0.9,a,0.1,100),lookAt(eye,[0,0,0],[0,1,0]));
+      gl.useProgram(p);gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,cb);gl.enableVertexAttribArray(aC);gl.vertexAttribPointer(aC,3,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(uVP,false,vp);
+      for(const cpos of cubes){gl.uniformMatrix4fv(uM,false,trans(cpos[0],cpos[1],cpos[2]));gl.drawArrays(gl.TRIANGLES,0,d.count);}
+      requestAnimationFrame(loop);})(0);
+  }
+  function D_tex(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,'attribute vec3 aPos;attribute vec3 aNormal;attribute vec2 aUV;uniform mat4 uMVP;uniform mat3 uNM;varying vec2 vUV;varying float sh;'+
+      'void main(){gl_Position=uMVP*vec4(aPos,1.0);vUV=aUV;vec3 n=normalize(uNM*aNormal);sh=0.4+0.6*max(dot(n,normalize(vec3(0.5,0.7,0.6))),0.0);}',
+      'precision mediump float;varying vec2 vUV;varying float sh;uniform sampler2D uT;void main(){gl_FragColor=vec4(texture2D(uT,vUV).rgb*sh,1.0);}');
+    const d=cubeData(),vb=vbuf(gl,d.pos),nb=vbuf(gl,d.nrm),tb=vbuf(gl,d.uv),tex=checkerTex(gl,64,false);
+    const aP=gl.getAttribLocation(p,'aPos'),aN=gl.getAttribLocation(p,'aNormal'),aU=gl.getAttribLocation(p,'aUV');
+    const uM=gl.getUniformLocation(p,'uMVP'),uNM=gl.getUniformLocation(p,'uNM'),uT=gl.getUniformLocation(p,'uT');
+    const st=drag(cv);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.6;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const model=mul(rotY(st.ry),rotX(st.rx)),mvp=mulAll(persp(0.9,a,0.1,100),trans(0,0,-3.4),model);
+      gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,tb);gl.enableVertexAttribArray(aU);gl.vertexAttribPointer(aU,2,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(uM,false,mvp);gl.uniformMatrix3fv(uNM,false,m3(model));
+      gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,tex);gl.uniform1i(uT,0);
+      gl.drawArrays(gl.TRIANGLES,0,d.count);requestAnimationFrame(loop);})(0);
+  }
+  function D_lit(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,PHONG_VS,PHONG_FS);const d=sphereData(28,40),vb=vbuf(gl,d.pos),nb=vbuf(gl,d.nrm),ib=ibuf(gl,d.idx);
+    const aP=gl.getAttribLocation(p,'aPos'),aN=gl.getAttribLocation(p,'aNormal');
+    const uPr=gl.getUniformLocation(p,'uProj'),uVi=gl.getUniformLocation(p,'uView'),uMo=gl.getUniformLocation(p,'uModel'),uNM=gl.getUniformLocation(p,'uNM'),uL=gl.getUniformLocation(p,'uLight'),uE=gl.getUniformLocation(p,'uEye'),uC=gl.getUniformLocation(p,'uColor');
+    const st=drag(cv);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.4;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const model=mul(rotY(st.ry),rotX(st.rx)),tt=t*0.001;
+      gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
+      gl.uniformMatrix4fv(uPr,false,persp(0.9,a,0.1,100));gl.uniformMatrix4fv(uVi,false,trans(0,0,-3.2));gl.uniformMatrix4fv(uMo,false,model);gl.uniformMatrix3fv(uNM,false,m3(model));
+      gl.uniform3f(uL,Math.cos(tt)*2.5,1.5,Math.sin(tt)*2.5);gl.uniform3f(uE,0,0,3.2);gl.uniform3f(uC,0.95,0.55,0.35);
+      gl.drawElements(gl.TRIANGLES,d.idx.length,gl.UNSIGNED_SHORT,0);requestAnimationFrame(loop);})(0);
+  }
+  function D_map(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,'attribute vec3 aPos;attribute vec3 aNormal;attribute vec2 aUV;uniform mat4 uProj,uView,uModel;uniform mat3 uNM;varying vec3 vN;varying vec3 vF;varying vec2 vUV;'+
+      'void main(){vec4 w=uModel*vec4(aPos,1.0);vF=w.xyz;vN=uNM*aNormal;vUV=aUV;gl_Position=uProj*uView*w;}',
+      'precision mediump float;varying vec3 vN;varying vec3 vF;varying vec2 vUV;uniform sampler2D uD;uniform sampler2D uS;uniform vec3 uLight;uniform vec3 uEye;'+
+      'void main(){vec3 base=texture2D(uD,vUV).rgb;float sm=texture2D(uS,vUV).r;vec3 n=normalize(vN);vec3 l=normalize(uLight-vF);'+
+      'float d=max(dot(n,l),0.0);vec3 v=normalize(uEye-vF);vec3 r=reflect(-l,n);float s=pow(max(dot(v,r),0.0),32.0);'+
+      'gl_FragColor=vec4(0.1*base+d*base+s*sm,1.0);}');
+    const d=cubeData(),vb=vbuf(gl,d.pos),nb=vbuf(gl,d.nrm),tb=vbuf(gl,d.uv),dif=checkerTex(gl,64,false),spc=checkerTex(gl,64,true);
+    const aP=gl.getAttribLocation(p,'aPos'),aN=gl.getAttribLocation(p,'aNormal'),aU=gl.getAttribLocation(p,'aUV');
+    const uPr=gl.getUniformLocation(p,'uProj'),uVi=gl.getUniformLocation(p,'uView'),uMo=gl.getUniformLocation(p,'uModel'),uNM=gl.getUniformLocation(p,'uNM'),uL=gl.getUniformLocation(p,'uLight'),uE=gl.getUniformLocation(p,'uEye'),uD=gl.getUniformLocation(p,'uD'),uS=gl.getUniformLocation(p,'uS');
+    const st=drag(cv);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.5;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const model=mul(rotY(st.ry),rotX(st.rx)),tt=t*0.001;
+      gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,tb);gl.enableVertexAttribArray(aU);gl.vertexAttribPointer(aU,2,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(uPr,false,persp(0.9,a,0.1,100));gl.uniformMatrix4fv(uVi,false,trans(0,0,-3.2));gl.uniformMatrix4fv(uMo,false,model);gl.uniformMatrix3fv(uNM,false,m3(model));
+      gl.uniform3f(uL,Math.cos(tt)*2.5,1.2,Math.sin(tt)*2.5);gl.uniform3f(uE,0,0,3.2);
+      gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,dif);gl.uniform1i(uD,0);
+      gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,spc);gl.uniform1i(uS,1);
+      gl.drawArrays(gl.TRIANGLES,0,d.count);requestAnimationFrame(loop);})(0);
+  }
+  function D_cast(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,PHONG_VS.replace('*uColor',''),  // reuse below custom instead
+      '');
+  }
+  function D_cast2(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,'attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uProj,uView,uModel;uniform mat3 uNM;varying vec3 vN;varying vec3 vF;'+
+      'void main(){vec4 w=uModel*vec4(aPos,1.0);vF=w.xyz;vN=uNM*aNormal;gl_Position=uProj*uView*w;}',
+      'precision mediump float;varying vec3 vN;varying vec3 vF;uniform vec3 uLight;uniform vec3 uColor;'+
+      'void main(){vec3 n=normalize(vN);vec3 tl=uLight-vF;float dist=length(tl);vec3 l=tl/dist;'+
+      'float att=1.0/(1.0+0.09*dist+0.15*dist*dist);float d=max(dot(n,l),0.0);'+
+      'vec3 col=(0.06+d*att*2.2)*uColor;gl_FragColor=vec4(col,1.0);}');
+    const d=cubeData(),vb=vbuf(gl,d.pos),nb=vbuf(gl,d.nrm);
+    const aP=gl.getAttribLocation(p,'aPos'),aN=gl.getAttribLocation(p,'aNormal');
+    const uPr=gl.getUniformLocation(p,'uProj'),uVi=gl.getUniformLocation(p,'uView'),uMo=gl.getUniformLocation(p,'uModel'),uNM=gl.getUniformLocation(p,'uNM'),uL=gl.getUniformLocation(p,'uLight'),uC=gl.getUniformLocation(p,'uColor');
+    const st=drag(cv,-0.5,0.5);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.25;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const R=11;const eye=[Math.sin(st.ry)*Math.cos(st.rx)*R,Math.sin(st.rx)*R+3.0,Math.cos(st.ry)*Math.cos(st.rx)*R];
+      const view=lookAt(eye,[0,0,0],[0,1,0]),proj=persp(0.9,a,0.1,100);const tt=t*0.001;
+      const lp=[Math.cos(tt)*3.0,1.2,Math.sin(tt)*3.0];
+      gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
+      gl.uniformMatrix4fv(uPr,false,proj);gl.uniformMatrix4fv(uVi,false,view);gl.uniform3f(uL,lp[0],lp[1],lp[2]);
+      for(let gx=-3;gx<=3;gx++)for(let gz=-3;gz<=3;gz++){const m=mul(trans(gx*1.4,-0.5,gz*1.4),scl(0.55,0.55,0.55));
+        gl.uniformMatrix4fv(uMo,false,m);gl.uniformMatrix3fv(uNM,false,m3(m));gl.uniform3f(uC,0.85,0.55,0.3);gl.drawArrays(gl.TRIANGLES,0,d.count);}
+      requestAnimationFrame(loop);})(0);
+  }
+  function D_geo(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,'attribute vec3 aPos;uniform mat4 uMVP;void main(){gl_Position=uMVP*vec4(aPos,1.0);}',
+      'precision mediump float;uniform vec3 uColor;void main(){gl_FragColor=vec4(uColor,1.0);}');
+    const d=sphereData(18,26),vb=vbuf(gl,d.pos);
+    const lines=[];for(let i=0;i<d.idx.length;i+=3){const a=d.idx[i],b=d.idx[i+1],c=d.idx[i+2];lines.push(a,b,b,c,c,a);}
+    const ib=ibuf(gl,lines);
+    const aP=gl.getAttribLocation(p,'aPos'),uM=gl.getUniformLocation(p,'uMVP'),uC=gl.getUniformLocation(p,'uColor');
+    const st=drag(cv);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.5;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const mvp=mulAll(persp(0.9,a,0.1,100),trans(0,0,-3.2),rotY(st.ry),rotX(st.rx));
+      gl.useProgram(p);gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.uniformMatrix4fv(uM,false,mvp);gl.uniform3f(uC,0.3,0.85,0.75);
+      gl.drawElements(gl.LINES,lines.length,gl.UNSIGNED_SHORT,0);requestAnimationFrame(loop);})(0);
+  }
+  function D_model(cv){ const gl=cv.getContext('webgl');gl.enable(gl.DEPTH_TEST);
+    const p=prog(gl,PHONG_VS,PHONG_FS);const d=torusKnot(240,20,2,3,0.55),vb=vbuf(gl,d.pos),nb=vbuf(gl,d.nrm),ib=ibuf(gl,d.idx);
+    const aP=gl.getAttribLocation(p,'aPos'),aN=gl.getAttribLocation(p,'aNormal');
+    const uPr=gl.getUniformLocation(p,'uProj'),uVi=gl.getUniformLocation(p,'uView'),uMo=gl.getUniformLocation(p,'uModel'),uNM=gl.getUniformLocation(p,'uNM'),uL=gl.getUniformLocation(p,'uLight'),uE=gl.getUniformLocation(p,'uEye'),uC=gl.getUniformLocation(p,'uColor');
+    const st=drag(cv);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;const a=resize(gl,cv);if(!st.down&&!reduce)st.ry+=dt*0.4;
+      gl.clearColor(0.02,0.03,0.05,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const model=mul(rotY(st.ry),rotX(st.rx)),tt=t*0.001;
+      gl.useProgram(p);
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);
+      gl.uniformMatrix4fv(uPr,false,persp(0.9,a,0.1,100));gl.uniformMatrix4fv(uVi,false,trans(0,0,-4.5));gl.uniformMatrix4fv(uMo,false,model);gl.uniformMatrix3fv(uNM,false,m3(model));
+      gl.uniform3f(uL,Math.cos(tt)*4.0,3.0,Math.sin(tt)*4.0);gl.uniform3f(uE,0,0,4.5);gl.uniform3f(uC,0.8,0.5,0.9);
+      gl.drawElements(gl.TRIANGLES,d.idx.length,gl.UNSIGNED_SHORT,0);requestAnimationFrame(loop);})(0);
+  }
+  function D_shadow(cv){
+    const gl=cv.getContext('webgl'); if(!gl) throw 0;
+    gl.enable(gl.DEPTH_TEST);
+    const lit=prog(gl,
+      'attribute vec3 aPos;attribute vec3 aNormal;uniform mat4 uProj,uView,uModel;uniform mat3 uNM;varying vec3 vN;varying vec3 vF;'+
+      'void main(){vec4 w=uModel*vec4(aPos,1.0);vF=w.xyz;vN=uNM*aNormal;gl_Position=uProj*uView*w;}',
+      'precision mediump float;varying vec3 vN;varying vec3 vF;uniform vec3 uLd;uniform vec3 uColor;'+
+      'void main(){vec3 n=normalize(vN);vec3 l=normalize(-uLd);float d=max(dot(n,l),0.0);gl_FragColor=vec4((0.30+0.70*d)*uColor,1.0);}');
+    const flat=prog(gl,
+      'attribute vec3 aPos;uniform mat4 uProj,uView,uModel;void main(){gl_Position=uProj*uView*uModel*vec4(aPos,1.0);}',
+      'precision mediump float;void main(){gl_FragColor=vec4(0.0,0.0,0.0,0.32);}');
+    const d=cubeData(),vb=vbuf(gl,d.pos),nb=vbuf(gl,d.nrm);
+    const boxes=[[-1.6,0.5,-0.6],[1.4,1.0,0.8],[0.2,0.7,-1.6],[1.8,0.4,-0.9]];
+    const cols=[[0.9,0.4,0.4],[0.4,0.8,0.5],[0.5,0.6,1.0],[0.95,0.8,0.3]];
+    function bindLit(){const aP=gl.getAttribLocation(lit,'aPos'),aN=gl.getAttribLocation(lit,'aNormal');
+      gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);
+      gl.bindBuffer(gl.ARRAY_BUFFER,nb);gl.enableVertexAttribArray(aN);gl.vertexAttribPointer(aN,3,gl.FLOAT,false,0,0);}
+    function bindFlat(){const aP=gl.getAttribLocation(flat,'aPos');gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.enableVertexAttribArray(aP);gl.vertexAttribPointer(aP,3,gl.FLOAT,false,0,0);}
+    // 把幾何沿光線壓到地板平面 y=0（平面投影陰影）
+    function shadowMat(ld){const y=(Math.abs(ld[1])<0.001?-0.001:ld[1]);
+      return new Float32Array([1,0,0,0, -ld[0]/y,0,-ld[2]/y,0, 0,0,1,0, 0,0,0,1]);}
+    const su=(pr,n)=>gl.getUniformLocation(pr,n);
+    const st=drag(cv,-0.3,0.55);let last=0;
+    (function loop(t){const dt=(t-last)/1000;last=t;if(!st.down&&!reduce)st.ry+=dt*0.2;
+      const a=resize(gl,cv);gl.clearColor(0.05,0.07,0.10,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+      const tt=t*0.0004;const ld=norm([Math.sin(tt)*0.55,-1.0,Math.cos(tt)*0.55]);
+      const R=9;const eye=[Math.sin(st.ry)*Math.cos(st.rx)*R,Math.sin(st.rx)*R+3.0,Math.cos(st.ry)*Math.cos(st.rx)*R];
+      const proj=persp(0.9,a,0.1,100),view=lookAt(eye,[0,0.5,0],[0,1,0]);
+      // 地板（頂面在 y=0）
+      gl.useProgram(lit);bindLit();
+      gl.uniformMatrix4fv(su(lit,'uProj'),false,proj);gl.uniformMatrix4fv(su(lit,'uView'),false,view);gl.uniform3f(su(lit,'uLd'),ld[0],ld[1],ld[2]);
+      let fm=mul(trans(0,-0.15,0),scl(9,0.3,9));
+      gl.uniformMatrix4fv(su(lit,'uModel'),false,fm);gl.uniformMatrix3fv(su(lit,'uNM'),false,m3(fm));gl.uniform3f(su(lit,'uColor'),0.72,0.72,0.75);
+      gl.drawArrays(gl.TRIANGLES,0,36);
+      // 陰影（投影到地板、半透明疊上去）
+      gl.useProgram(flat);bindFlat();
+      gl.uniformMatrix4fv(su(flat,'uProj'),false,proj);gl.uniformMatrix4fv(su(flat,'uView'),false,view);
+      gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+      const S=shadowMat(ld);
+      for(let i=0;i<boxes.length;i++){const bm=mul(trans(boxes[i][0],boxes[i][1],boxes[i][2]),rotY(i));
+        const sm=mul(trans(0,0.02,0),mul(S,bm));gl.uniformMatrix4fv(su(flat,'uModel'),false,sm);gl.drawArrays(gl.TRIANGLES,0,36);}
+      gl.depthMask(true);gl.disable(gl.BLEND);
+      // 方塊本體
+      gl.useProgram(lit);bindLit();
+      gl.uniformMatrix4fv(su(lit,'uProj'),false,proj);gl.uniformMatrix4fv(su(lit,'uView'),false,view);gl.uniform3f(su(lit,'uLd'),ld[0],ld[1],ld[2]);
+      for(let i=0;i<boxes.length;i++){const bm=mul(trans(boxes[i][0],boxes[i][1],boxes[i][2]),rotY(i));
+        gl.uniformMatrix4fv(su(lit,'uModel'),false,bm);gl.uniformMatrix3fv(su(lit,'uNM'),false,m3(bm));gl.uniform3f(su(lit,'uColor'),cols[i][0],cols[i][1],cols[i][2]);
+        gl.drawArrays(gl.TRIANGLES,0,36);}
+      requestAnimationFrame(loop);})(0);
+  }
+
+  const map={ 'd-tri':D_tri,'d-col':D_col,'d-tr':D_tr,'d-cube':D_cube,'d-cam':D_cam,'d-tex':D_tex,
+    'd-lit':D_lit,'d-map':D_map,'d-cast':D_cast2,'d-geo':D_geo,'d-model':D_model,'d-shadow':D_shadow };
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{ if(e.isIntersecting){ const cv=e.target;
+    if(!cv._init){ cv._init=true; try{ map[cv.id](cv); }catch(err){ console.warn(cv.id,err);
+      const g=cv.getContext('webgl'); if(g){ g.clearColor(0.06,0.07,0.1,1); g.clear(g.COLOR_BUFFER_BIT); } } }
+    io.unobserve(cv); } }); }, {rootMargin:'150px'});
+  Object.keys(map).forEach(id=>{ const el=document.getElementById(id); if(el) io.observe(el); });
+
+  // hero wireframe cube
+  (function(){ const c=document.getElementById('wire'); if(!c)return; const x=c.getContext('2d');
+    const dpr=Math.min(devicePixelRatio||1,2); function fit(){c.width=c.clientWidth*dpr;c.height=c.clientHeight*dpr;} fit();addEventListener('resize',fit);
+    function ac(){return getComputedStyle(document.querySelector('.page')).getPropertyValue('--accent').trim()||'#ff7d22';}
+    const V=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+    const E=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    function fr(t){const w=c.width,h=c.height;x.clearRect(0,0,w,h);const a=t*0.00035,b=t*0.00023,cx=w*0.52,cy=h*0.5,s=Math.min(w,h)*0.24;
+      const P=V.map(([X,Y,Z])=>{let x1=X*Math.cos(a)-Z*Math.sin(a),z1=X*Math.sin(a)+Z*Math.cos(a);let y1=Y*Math.cos(b)-z1*Math.sin(b);z1=Y*Math.sin(b)+z1*Math.cos(b);const p=3.2/(3.2+z1);return[cx+x1*s*p,cy+y1*s*p];});
+      x.lineWidth=1.4*dpr;x.strokeStyle=ac();x.globalAlpha=.85;E.forEach(([i,j])=>{x.beginPath();x.moveTo(P[i][0],P[i][1]);x.lineTo(P[j][0],P[j][1]);x.stroke();});
+      x.globalAlpha=1;x.fillStyle=ac();P.forEach(([px,py])=>{x.beginPath();x.arc(px,py,2*dpr,0,7);x.fill();});
+      if(!reduce)requestAnimationFrame(fr);}
+    if(reduce)fr(1200);else requestAnimationFrame(fr);
+  })();
+})();
+</script>

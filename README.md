@@ -4,6 +4,8 @@ A small real-time 3D renderer written from scratch in **C++ / OpenGL**, built as
 
 > 從零開始、親手用 C++ 與 OpenGL 打造的小型即時 3D 渲染器。
 
+**🌐 Live interactive demos (playable in the browser):** https://paige0320.github.io/render-master-learning-journey/
+
 ![screenshot](docs/screenshot.png)
 <!-- 換成你的截圖/GIF：把檔案放到 docs/screenshot.png，或改這行的路徑 -->
 
@@ -21,7 +23,7 @@ Also included: reusable `Shader`, `Mesh`, and `Camera` header classes from an en
 
 Built through a step-by-step learning path that also covered textures, specular maps, and multiple light types (directional / point / spotlight). Interactive WebGL recreations of every step:
 
-**🔗 Interactive demos:** _(paste your shared artifact link here)_
+**🔗 Live interactive demos:** https://paige0320.github.io/render-master-learning-journey/
 
 ---
 
