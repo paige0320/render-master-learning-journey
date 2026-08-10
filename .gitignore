@@ -1,0 +1,25 @@
+# Build output (CMake + fetched dependencies — do NOT commit, it's large & regenerated)
+build/
+out/
+cmake-build-*/
+
+# Visual Studio / IDE
+.vs/
+*.user
+*.suo
+.vscode/
+.idea/
+
+# Compiled / binary
+*.exe
+*.obj
+*.lib
+*.dll
+*.pdb
+*.ilk
+*.exp
+
+# OS junk
+Thumbs.db
+Desktop.ini
+.DS_Store
