@@ -463,6 +463,7 @@
 
       <div class="gloss-stage">
         <h3><span class="stagenum">04</span>GPU Programming</h3>
+        <p class="gloss-note">核心心智模型：<b>GPU＝幾千個簡單的工人，同時做同一件事</b>（CPU 則是幾個聰明工人、一件一件做）。這階段全在講「怎麼組織這些工人」。你的 fragment shader「每個像素跑一次」，那幾百萬次就是這幾千個工人平行跑的。</p>
         <div class="tblwrap"><table class="gloss">
           <thead><tr><th>名詞</th><th>簡單理解</th><th>實際應用</th></tr></thead>
           <tbody>
@@ -477,6 +478,45 @@
             <tr><td>Async Compute</td><td>Rendering 同時執行其他 GPU 工作</td><td>後處理、模擬、提高 GPU 利用率</td></tr>
           </tbody>
         </table></div>
+        <details class="term"><summary>GPU Pipeline — 白話解說</summary><div class="termbody">
+          <p>就是你熟的生產線：<b>頂點 → 光柵化 → 像素</b>，GPU 幫你排好的固定流程。這階段一部分是<b>看懂它、找瓶頸</b>（例如 Draw Call 太多會拖慢）。</p>
+          <p class="rem">記法：GPU Pipeline＝GPU 內建的繪圖生產線；懂它才能找效能瓶頸。</p>
+        </div></details>
+        <details class="term"><summary>GPU Memory (VRAM) — 白話解說</summary><div class="termbody">
+          <p>GPU 自己的記憶體，放 <b>Mesh、貼圖、Buffer</b>。你的 VBO/EBO/貼圖全都住在 VRAM 裡。資產最佳化＝別讓它爆（4K 貼圖很吃 VRAM）。</p>
+          <p class="rem">記法：VRAM＝GPU 的記憶體，你的頂點/貼圖都住這。</p>
+        </div></details>
+        <details class="term"><summary>Compute Shader — 白話解說</summary><div class="termbody">
+          <p>前面的 shader 都綁死在「畫三角形」（vertex 管頂點、fragment 管像素）。<b>Compute Shader 掙脫這條線：讓你用 GPU 那幾千個工人跑自己的程式、處理任何資料，不一定要畫圖。</b></p>
+          <p>用途：粒子系統、影像處理、物理模擬、資料生成 / AI 運算。</p>
+          <p class="rem">記法：GPU＝幾千個工人同時做同一件事；Compute Shader＝把工人從「只能畫三角形」解放出來，拿去算任何東西。</p>
+        </div></details>
+        <details class="term"><summary>Thread Group — 白話解說</summary><div class="termbody">
+          <p>把幾千個工人分成<b>小隊</b>。同一隊可共用一塊快取「小白板」（shared memory）、互相傳紙條合作；跨隊不行。（compute 裡自己設一隊多大。）</p>
+          <p class="rem">記法：Thread＝一個工人；Thread Group＝小隊，隊內共用小白板合作、比各自去大記憶體拿快。</p>
+        </div></details>
+        <details class="term"><summary>Warp / Wave — 白話解說</summary><div class="termbody">
+          <p>GPU 不是一個一個調度工人，而是<b>一排 32 個綁在一起、同一口令一起動</b>（NVIDIA=Warp、AMD=Wave）。</p>
+          <p>後果：<b>if/else 會變慢</b>——一排 32 人若有些走 if、有些走 else，硬體只好「先全做 if（該走 else 的乾等）→ 再全做 else」，一排被拆開效率砍半（＝分支效能問題）。</p>
+          <p class="rem">記法：Warp/Wave＝32 個 thread 一排、動作一致；把一排用 if/else 拆開就變慢。</p>
+        </div></details>
+        <details class="term"><summary>Occupancy — 白話解說</summary><div class="termbody">
+          <p>GPU 同時維持多少「<b>有在幹活</b>」的工人 vs 它的上限。高＝工人都有事做、就算有人在等記憶體別人可先做（有效率）；低＝一堆工人閒著乾等（浪費）。</p>
+          <p class="rem">記法：Occupancy＝工人有沒有被餵飽。高＝GPU 忙而有效率、能藏記憶體延遲。</p>
+        </div></details>
+        <details class="term"><summary>GPU Instancing — 白話解說</summary><div class="termbody">
+          <p>畫一萬棵草若「一棵一個指令」→ CPU 要喊一萬次、忙成瓶頸。<b>Instancing＝一個指令說「這 mesh 畫一萬次，位置在這」</b>，GPU 自己重複。</p>
+          <p>你做過「一份幾何＋迴圈畫很多方塊」是它的<b>精神</b>，但那是迴圈喊很多次；真正的 instancing 是一次指令畫全部（<code>glDrawArraysInstanced</code>）。用途：草、樹、群眾、粒子。</p>
+          <p class="rem">記法：Instancing＝一個 draw call 畫大量相同 mesh，省掉 CPU 的重複指令。</p>
+        </div></details>
+        <details class="term"><summary>Mesh Shader — 白話解說</summary><div class="termbody">
+          <p>傳統幾何前段（vertex shader 那條）較死板。<b>Mesh Shader＝更彈性的現代做法</b>，讓 GPU 更自由地產生／裁切幾何，能先剔除看不到的三角形不浪費力氣（GPU-driven rendering）。較新硬體才有。</p>
+          <p class="rem">記法：Mesh Shader＝幾何管線前段的彈性升級版，GPU 自主產生/裁切幾何。</p>
+        </div></details>
+        <details class="term"><summary>Async Compute — 白話解說</summary><div class="termbody">
+          <p>平常 GPU 的繪圖工作和 compute 工作是<b>輪流</b>做。<b>Async Compute＝讓 compute 和繪圖「同時」進行</b>，趁繪圖單元有空檔塞 compute 進去 → GPU 不閒置、利用率更高。</p>
+          <p class="rem">記法：Async Compute＝繪圖與運算並行，填 GPU 空檔、提高利用率。</p>
+        </div></details>
       </div>
     </section>
 
