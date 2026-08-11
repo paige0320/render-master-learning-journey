@@ -449,6 +449,16 @@
           <p>為什麼跟 HDR 綁一起：第 ① 步要挑「很亮」的地方，若顏色被砍在 0~1 就分不出誰真的亮；<b>有 HDR 才知道太陽該發光、白牆不用</b>。第 ②③ 步的抹糊/疊回都用 <b>FBO</b>（畫進貼圖再處理）。</p>
           <p class="rem">記法：Bloom＝抽亮部→模糊→疊回，做出光暈。需要 HDR 分辨亮度、用 FBO 做模糊。</p>
         </div></details>
+        <details class="term"><summary>Motion Vector — 白話解說</summary><div class="termbody">
+          <p><b>記錄每個像素「從上一幀移到這一幀，移了多少」的小箭頭。</b>疊前後影格前，先用它「追」到像素在上一幀的正確位置。</p>
+          <p>用途：TAA（避免會動的東西疊出殘影）、Motion Blur（動態模糊）、DLSS（AI 放大畫面）。</p>
+          <p class="rem">記法：Motion Vector＝每個像素的移動箭頭，讓疊圖能對準會動的東西。</p>
+        </div></details>
+        <details class="term"><summary>TAA — 白話解說</summary><div class="termbody">
+          <p>Temporal Anti-Aliasing（時間性抗鋸齒）。每幀讓相機<b>極輕微抖一下</b>（方向每幀不同），再把<b>連續好幾幀疊起來平均</b>→ 鋸齒被抹平。便宜又有效，現代遊戲幾乎都用。</p>
+          <p>和你做過的 <b>PCF 精神一樣</b>：多取樣、平均→變平滑。PCF 是空間上取周圍，TAA 是時間上取前幾幀。會動的東西靠 <b>Motion Vector</b> 對準，才不會殘影。</p>
+          <p class="rem">記法：TAA＝把好幾張「微抖」的影格疊起來平均，抹掉鋸齒（時間版的 PCF）。</p>
+        </div></details>
       </div>
 
       <div class="gloss-stage">
