@@ -434,6 +434,21 @@
           <p>對照你會的：陰影課的 FBO 只掛 <b>1 張</b>深度圖；MRT 就是同一個 FBO <b>掛好幾張</b>，shader 一次把它們全寫好——這正是拿來一次生出整組 G-Buffer 的技術。</p>
           <p class="rem">記法：MRT＝一次畫進好幾張貼圖。你陰影做過「畫進 1 張貼圖」，MRT 就是變成「一次好幾張」。</p>
         </div></details>
+        <details class="term"><summary>HDR — 白話解說</summary><div class="termbody">
+          <p>一般顏色每通道是 <b>0~1</b>（1＝螢幕能顯示的最亮）。但真實世界太陽比白牆亮幾千倍，全砍到 1 就失真（太陽和白牆一樣亮）。</p>
+          <p><b>HDR＝允許顏色超過 1</b>（白牆=1、檯燈=5、太陽=1000），先把真實的亮度範圍保留下來給計算用（之後 Bloom、曝光才分得出誰真的亮）。</p>
+          <p class="rem">記法：HDR＝讓亮度能超過 1，保留真實範圍。你現在的 0~1 叫 LDR。</p>
+        </div></details>
+        <details class="term"><summary>Tone Mapping — 白話解說</summary><div class="termbody">
+          <p>螢幕只能顯示 0~1，那亮到 1000 的 HDR 畫面怎麼顯示？<b>Tone Mapping＝把超大的 HDR 範圍漂亮地壓縮回 0~1。</b></p>
+          <p>就是相機的<b>曝光</b>、或你眼睛的適應：從暗房走到大太陽下，眼睛自動調整，讓亮的暗的都看得到細節。不同壓縮曲線＝不同風格（電影感、膠片感）。</p>
+          <p class="rem">記法：Tone Mapping＝最後把 HDR 壓回螢幕的 0~1，像相機曝光／眼睛適應。</p>
+        </div></details>
+        <details class="term"><summary>Bloom — 白話解說</summary><div class="termbody">
+          <p>讓<b>超亮的地方向外發光</b>（霓虹燈、太陽那種光暈）。三步驟：① 抽出很亮的部分（亮度&gt;1）→ ② 把它<b>模糊</b>（光向外擴散）→ ③ <b>疊回</b>原畫面。</p>
+          <p>為什麼跟 HDR 綁一起：第 ① 步要挑「很亮」的地方，若顏色被砍在 0~1 就分不出誰真的亮；<b>有 HDR 才知道太陽該發光、白牆不用</b>。第 ②③ 步的抹糊/疊回都用 <b>FBO</b>（畫進貼圖再處理）。</p>
+          <p class="rem">記法：Bloom＝抽亮部→模糊→疊回，做出光暈。需要 HDR 分辨亮度、用 FBO 做模糊。</p>
+        </div></details>
       </div>
 
       <div class="gloss-stage">
