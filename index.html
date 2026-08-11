@@ -398,6 +398,42 @@
           </tbody>
         </table></div>
         <p class="gloss-note">你已經碰過 Depth Buffer，這正是 Frame Buffer 與後續 G-Buffer 的入口。你的練習也驗證過：沒有深度測試時，後方表面可能錯誤蓋住前方表面。</p>
+        <details class="term"><summary>Forward Rendering — 白話解說</summary><div class="termbody">
+          <p>你現在的渲染器就是這種：<b>每畫一個物體，就當場把所有燈算完、直接輸出像素</b>。</p>
+          <p>優點：簡單，透明物件、VR 都好處理。缺點：<b>燈一多就爆</b>（算光次數 ≈ 物體數 × 燈數），而且可能對「最後被別的東西擋住、根本看不到」的表面也白算了光。</p>
+          <p class="rem">記法：Forward＝每個物體當場算光。簡單，但燈多會累、還會浪費在看不到的表面。</p>
+        </div></details>
+        <details class="term"><summary>Deferred Rendering — 白話解說</summary><div class="termbody">
+          <p>核心一句：<b>「先記筆記，最後再一次算光」</b>。分兩階段：① 先不算光，只在每個像素記下「什麼顏色、面朝哪、離多遠」；② 收集完再統一把光算完。</p>
+          <p>為什麼這樣比較好：<b>(A)</b> 便利貼只留最前面看得到的，所以<b>只算看得到的像素、不浪費</b>（不像 Forward 可能白算被柱子擋住的牆）；<b>(B)</b> 算光次數 ≈ 螢幕像素 × 燈數，<b>和物體數脫鉤</b>，超多光源也不怕。</p>
+          <p>缺點：透明物件難處理、G-Buffer 吃記憶體。</p>
+          <p class="rem">記法：Forward＝每個物體當場算；Deferred＝先記筆記再統一算（燈多也快，但耗記憶體、不好處理透明）。</p>
+        </div></details>
+        <details class="term"><summary>Render Target — 白話解說</summary><div class="termbody">
+          <p>「<b>畫出來的東西送去哪</b>」。預設是<b>螢幕</b>；但也可以把畫面<b>送進一張貼圖</b>。</p>
+          <p>你陰影課<b>做過</b>：把場景深度畫進一張深度貼圖，那張貼圖就是一個 render target。</p>
+          <p class="rem">記法：Render Target＝繪圖的目的地。螢幕是預設的，貼圖也可以當一個（你陰影的深度圖就是）。</p>
+        </div></details>
+        <details class="term"><summary>Frame Buffer — 白話解說</summary><div class="termbody">
+          <p>管理「一次渲染要輸出到哪些附件」（Color 顏色、Depth 深度…）的容器。把東西畫進 FBO 而不是螢幕，就叫<b>離屏渲染 (off-screen)</b>。</p>
+          <p>你陰影課用的 <b>FBO 就是 framebuffer</b>——後處理、反射、G-Buffer 全都建在它上面。</p>
+          <p class="rem">記法：Frame Buffer (FBO)＝畫面輸出的容器；畫進它＝離屏渲染。是所有進階特效的入口。</p>
+        </div></details>
+        <details class="term"><summary>Render Pass — 白話解說</summary><div class="termbody">
+          <p>一段「有明確輸入與輸出」的渲染工作。一個畫面通常由好幾個 pass 疊出來（Shadow pass、不透明物件 pass、透明物件 pass、後處理 pass…）。</p>
+          <p>你陰影課的「<b>兩次渲染</b>」＝ depth pass（從光的視角）+ main pass（正常畫）＝ 兩個 render pass。</p>
+          <p class="rem">記法：Render Pass＝一段獨立的渲染工作。你陰影的兩次渲染就是兩個 pass。</p>
+        </div></details>
+        <details class="term"><summary>G-Buffer — 白話解說</summary><div class="termbody">
+          <p>Deferred 第一階段記下的那「<b>一疊便利貼</b>」的真面目：<b>一組貼圖，每張只存一種資料</b>——顏色、法線、位置/深度、材質(roughness/metallic)。</p>
+          <p>破解名詞：<b>Buffer＝一塊 GPU 記憶體</b>（VBO 是裝頂點的 buffer，貼圖是裝像素的 buffer），沒很玄。印出來看：法線那張是怪彩虹圖、深度那張是灰階圖、顏色那張像沒打光的場景。</p>
+          <p class="rem">記法：G-Buffer＝把場景資料拆成好幾張貼圖先存著（顏色/法線/位置/材質），之後算光查表用。</p>
+        </div></details>
+        <details class="term"><summary>MRT — 白話解說</summary><div class="termbody">
+          <p>Multiple Render Targets：<b>一個 shader 一次就寫進好幾張貼圖</b>（不用把場景重畫好幾遍、一遍產一張）。</p>
+          <p>對照你會的：陰影課的 FBO 只掛 <b>1 張</b>深度圖；MRT 就是同一個 FBO <b>掛好幾張</b>，shader 一次把它們全寫好——這正是拿來一次生出整組 G-Buffer 的技術。</p>
+          <p class="rem">記法：MRT＝一次畫進好幾張貼圖。你陰影做過「畫進 1 張貼圖」，MRT 就是變成「一次好幾張」。</p>
+        </div></details>
       </div>
 
       <div class="gloss-stage">
